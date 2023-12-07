@@ -53,3 +53,34 @@ ORDER BY average_rating DESC;
 SELECT category, AVG(price), AVG(average_rating), SUM(stock_quantity)
 FROM superstore
 WHERE category = "Kitchen Supplies";
+
+----------------------------------
+
+#Additional Queries
+
+***Order the items by price.***
+
+SELECT*
+FROM superstore
+ORDER BY price desc;
+
+***show a statistic about the item prices, 
+   like a sum, average, minimum, maximum, or count.***
+   
+SELECT category, AVG(price), SUM(stock_quantity), average_rating
+FROM superstore
+GROUP BY category
+ORDER BY average_rating desc;
+
+***show a statistic about the price for items in the category of "Kitchen Supplies".***
+
+SELECT category, item_name, MAX(Price), average_rating
+FROM superstore
+WHERE category="Kitchen Supplies";
+
+***How much in total inventory, range of pricing, range of rating?***
+
+SELECT SUM(stock_quantity), MIN(price), MAX(price)
+, Min(average_rating), MAX(average_rating)
+From superstore;
+
