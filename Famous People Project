@@ -1,0 +1,50 @@
+CREATE TABLE famous_people(id INTEGER PRIMARY KEY,
+                           name TEXT,
+                           age NUMERIC,
+                           birth_place TEXT,
+                           married INTEGER,
+                           children NUMERIC);
+                       
+INSERT INTO famous_people VALUES(1,'Dwayne Johnson',51,'Hayward, CA',2,2);
+INSERT INTO famous_people VALUES(2,'Arnold schwarzenegger',76,'Thal, Austria',1,5);
+INSERT INTO famous_people VALUES(3,'sylvester stallone',77,'New York, NY',3,5);
+INSERT INTO famous_people VALUES(4,'Frank Sinatra',82,'Hoboken, NJ',4,3);
+
+CREATE TABLE career(id INTEGER PRIMARY KEY,
+                    occupation TEXT,
+                    years INTEGER,
+                    net_worth NUMERIC);
+                           
+INSERT INTO career VALUES(1,'Actor',20,800000000);
+INSERT INTO career VALUES(2,'Actor',45,450000000);
+INSERT INTO career VALUES(3,'Actor',50,400000000);
+INSERT INTO career VALUES(4,'Singer',60,300000000);
+
+CREATE TABLE mortality(id INTEGER PRIMARY KEY,
+                       deseased TEXT); 
+
+INSERT INTO mortality VALUES(1,'No');
+INSERT INTO mortality VALUES(2,'No');
+INSERT INTO mortality VALUES(3,'No');
+INSERT INTO mortality VALUES(4,'Yes');
+
+
+
+***ANALYSIS***
+
+SELECT * FROM famous_people;
+SELECT * FROM career;
+SELECT * FROM mortality;
+
+SELECT famous_people.name, career.occupation, famous_people.age, career.net_worth, mortality.deseased
+FROM famous_people
+JOIN career ON famous_people.id=career.id
+JOIN mortality ON famous_people.id=mortality.id
+ORDER BY net_worth desc;
+
+SELECT fp.name, c.years, c.net_worth, c.net_worth/c.years AS avg_yearly_earnings, (c.net_worth/c.years)*5 AS estimated_5_year_return
+FROM famous_people fp
+JOIN career c
+ON fp.id=c.id
+JOIN mortality m ON fp.id=m.id
+WHERE m.deseased='No'
