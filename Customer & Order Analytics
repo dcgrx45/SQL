@@ -1,0 +1,94 @@
+#In this SQL query, I'm extracting data from a database that comprises multiple tables, 
+aiming to quantify various statistics related to customer and order information. Private database.
+
+#How many orders were placed in January?#
+
+SELECT*
+FROM BIT_DB.JanSales
+
+SELECT COUNT(*)
+FROM BIT_DB.JanSales
+WHERE length(orderID)=6
+AND orderID <> 'Order ID';
+
+#How many of those orders were for an iPhone?#
+
+SELECT COUNT(*)
+FROM BIT_DB.JanSales
+WHERE Product='iPhone'
+AND length(orderID)=6
+AND orderID <> 'Order ID';
+
+#Select the customer account numbers for all the orders that were placed in February.#
+
+SELECT *
+FROM BIT_DB.customers;
+
+SELECT distinct customers.acctnum, FebSales.orderID
+FROM BIT_DB.customers
+JOIN BIT_DB.FebSales
+ON customers.order_id=FebSales.orderID
+WHERE length(orderID)=6
+AND orderID <> 'Order ID';
+
+SELECT distinct acctnum
+FROM BIT_DB.customers cust
+INNER JOIN BIT_DB.FebSales Feb
+ON cust.order_id=FEB.orderid
+WHERE length(orderid) = 6
+AND orderid <> 'Order ID'; 
+
+#Which product was the cheapest one sold in January, and what was the price?#
+
+SELECT Product, MIN(price)
+FROM BIT_DB.JanSales
+
+GROUP BY Product
+ORDER BY MIN(price)
+LIMIT 5;
+
+#What is the total revenue for each product sold in January?#
+
+SELECT Product, ROUND(SUM(Quantity)*price,2) AS jan_revenue
+FROM BIT_DB.JanSales
+GROUP BY Product
+ORDER BY jan_revenue desc;
+
+SELECT orderid, quantity, price, product
+FROM BIT_DB.JanSales; 
+
+SELECT SUM(quantity), price, product
+FROM BIT_DB.JanSales
+GROUP BY product;
+
+#Which products were sold in February at 548 Lincoln St, Seattle, WA 98101, 
+how many of each were sold, and what was the total revenue?#
+
+SELECT Product, Quantity, SUM(Quantity)*price AS total_cost, location
+FROM BIT_DB.FebSales
+WHERE location='548 Lincoln St, Seattle, WA 98101'
+GROUP BY Product, location;
+
+#How many customers ordered more than 2 products at a time in February, 
+and what was the average amount spent for those customers?#
+
+SELECT COUNT(distinct customers.acctnum) AS customers_purchasing_2_or_more_items
+,ROUND(AVG(FebSales.Quantity*FebSales.price),2) AS avg_spent
+FROM BIT_DB.customers
+JOIN BIT_DB.FebSales
+ON customers.order_id=FebSales.orderID
+WHERE FebSales.Quantity>2
+AND length(orderid) = 6
+AND orderid <> 'Order ID';
+
+#How many customers ordered more than 4 products at a time in January, 
+and what was the average amount spent for those customers?#
+
+SELECT COUNT(distinct customers.acctnum)AS customers_purchasing_2_or_more_items
+,ROUND(AVG(JanSales.Quantity*JanSales.price),2)AS avg_spent
+FROM BIT_DB.customers
+JOIN BIT_DB.JanSales
+ON customers.order_id=JanSales.orderID
+WHERE JanSales.Quantity>=5
+AND length(orderID)=6
+AND orderID <> 'Order ID';
