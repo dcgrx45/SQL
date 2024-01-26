@@ -1,0 +1,76 @@
+# For this project, I downloaded Spotify data from Kaggle.
+# I then created a table to insert the Spotify data into.
+# Finally, I performed analytics on the data using SQL. 
+
+#Creating the table: 
+CREATE TABLE BIT_DB.Spotifydata (
+id integer PRIMARY KEY,
+artist_name varchar NOT NULL,
+track_name varchar NOT NULL,
+track_id varchar NOT NULL,
+popularity integer NOT NULL,
+danceability decimal(4,3) NOT NULL,
+energy decimal(4,3) NOT NULL,
+key integer NOT NULL,
+loudness decimal(5,3) NOT NULL,
+mode integer NOT NULL,
+speechiness decimal(5,4) NOT NULL,
+acousticness decimal(6,5) NOT NULL,
+instrumentalness text NOT NULL,
+liveness decimal(5,4) NOT NULL,
+valence decimal(4,3) NOT NULL,
+tempo decimal(6,3) NOT NULL,
+duration_ms integer NOT NULL,
+time_signature integer NOT NULL 
+);
+
+#After creating the table in SQLite Studio, I inserted the Spotify Data .csv into the table.
+
+#Next, I explored the data using the following SQL. 
+
+***How many individual artist are on the list?***
+
+SELECT COUNT(DISTINCT artist_name)AS unique_artist_count
+FROM BIT_DB.Spotifydata;
+
+*** Which artist have the most songs on the list and 
+    how many songs do they have listed?***
+    
+SELECT artist_name, COUNT(track_name)AS track_count
+FROM BIT_DB.Spotifydata
+GROUP BY artist_name
+HAVING COUNT(track_name) >=2
+ORDER BY track_count DESC;
+
+***What is the average danceability by artist?***
+
+SELECT ROUND(AVG(danceability),4) AS avg_danceability, artist_name AS a_n
+FROM BIT_DB.Spotifydata
+GROUP BY a_n
+ORDER BY avg_danceability DESC
+LIMIT 10;
+
+***Who are the top 10 artists based on popularity?***
+
+SELECT artist_name, SUM(popularity) AS total_pop
+FROM BIT_DB.Spotifydata
+GROUP BY artist_name
+ORDER BY total_pop DESC
+LIMIT 10;
+
+***What's the average danceability for the 10 most popular songs?***
+
+SELECT ROUND(AVG(danceability),4) AS avg_danceability
+FROM BIT_DB.Spotifydata
+WHERE popularity IN(SELECT MAX(popularity)
+            FROM BIT_DB.Spotifydata
+            ORDER BY MAX(popularity) DESC
+            LIMIT 10);
+
+***Which artists released the top 5 longest songs and what are their
+   lengths in minutes?***
+
+SELECT artist_name, track_name, ROUND(duration_ms/60000.00,2) AS duration_min
+FROM BIT_DB.Spotifydata
+ORDER By duration_min DESC
+LIMIT 5;
