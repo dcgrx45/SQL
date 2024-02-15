@@ -1,0 +1,168 @@
+The goal of this project was to gain sales insights from a digital media store.
+
+***Show Customers who are not in the US.***
+
+SELECT CustomerId, FirstName, LastName, Country
+FROM chinook.customers
+WHERE Country != 'USA'
+ORDER BY Country DESC;
+
+    ***Only the Customers from Brazil.***
+    
+SELECT CustomerId, FirstName, LastName, Country
+FROM chinook.customers
+WHERE Country = 'Brazil';
+
+    ***Invoices of customers who are from Brazil.***
+
+SELECT c.FirstName, c.LastName, c.Country, i.InvoiceId,i.InvoiceDate, i.BillingCountry
+FROM chinook.customers AS c
+INNER JOIN chinook.invoices AS i
+ON c.CustomerId = i.CustomerId
+WHERE i.BillingCountry = 'Brazil';
+
+    ***Show the Employees who are Sales Agents.***
+    
+SELECT *
+FROM chinook.employees
+WHERE Title LIKE '%agent%';
+
+    ***Which country has the most billings, and what was the total amount billed to each?***
+
+SELECT BillingCountry, ROUND(SUM(Total),2) AS Total_By_Country
+FROM chinook.invoices
+GROUP BY BillingCountry
+ORDER BY Total_By_Country DESC;
+
+    ***Number one Artist sold by country***
+
+SELECT Artist,
+       Country,
+       Total_Sold
+FROM (
+    SELECT ar.Name AS Artist,
+           i.BillingCountry AS Country,
+           COUNT(ii.InvoiceId) AS Total_Sold,
+           ROW_NUMBER() OVER (PARTITION BY i.BillingCountry ORDER BY COUNT(ii.InvoiceId) DESC) AS rn
+    FROM chinook.tracks AS t
+        JOIN chinook.invoice_items AS ii
+        ON ii.TrackId = t.TrackId
+            JOIN chinook.invoices AS i 
+             ON i.InvoiceId = ii.InvoiceId
+                JOIN chinook.albums AS a 
+                ON a.AlbumId = t.AlbumId
+                    JOIN chinook.artists AS ar 
+                    ON ar.ArtistId = a.ArtistId
+    GROUP BY i.BillingCountry, ar.Name
+) AS ranked_data
+WHERE rn = 1
+ORDER BY Country ASC;
+
+    ***Provide a query that shows the invoices associated with each sales agent.***
+
+
+SELECT e.EmployeeId, e.FirstName, e.LastName, i.invoiceId
+FROM chinook.customers AS c
+    INNER JOIN chinook.employees AS e
+    ON c.SupportRepId = e.EmployeeId
+        INNER JOIN chinook.invoices AS i
+        ON c.CustomerId = i.CustomerId;
+        
+    ***Total number of invoices per sales agent***
+    
+SELECT e.EmployeeId, e.FirstName, e.LastName, COUNT(i.invoiceId) AS Total_Invoices
+FROM chinook.customers AS c
+    INNER JOIN chinook.employees AS e
+    ON c.SupportRepId = e.EmployeeId
+        INNER JOIN chinook.invoices AS i
+        ON c.CustomerId = i.CustomerId
+        GROUP BY e.EmployeeId;
+
+    ***Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.***
+    
+SELECT c.FirstName ||' '||c.LastName AS Customer_Name 
+      ,c.Country AS Customer_Country
+      ,COUNT(i.invoiceId) AS Total_Invoices
+      ,SUM(i.Total) AS Total_Spent
+      ,e.FirstName ||' '||e.LastName AS Sales_Agent
+FROM chinook.customers AS c
+    INNER JOIN chinook.employees AS e
+    ON c.SupportRepId = e.EmployeeId
+        INNER JOIN chinook.invoices AS i
+        ON c.CustomerId = i.CustomerId
+        GROUP BY c.CustomerId
+        ORDER BY Customer_Country, Total_Spent DESC;
+
+  ***Total Invoices in 2009?***
+
+SELECT COUNT(InvoiceId) AS '2009_Invoice_Total'
+FROM invoices
+WHERE InvoiceDate LIKE '2009_%';
+
+SELECT *
+FROM invoices
+
+    ***What are the total sales for 2009?***
+    
+SELECT ROUND(SUM(Total),2) AS '2009_sales_Total'
+FROM invoices
+WHERE InvoiceDate LIKE '2009_%';
+
+    ***Purchased track name with each invoice line ID.***
+    
+SELECT t.Name AS track_name, ii.InvoiceLineId
+FROM tracks AS t
+INNER JOIN invoice_items AS ii
+ON t.TrackId = ii.TrackId
+ORDER BY InvoiceLineId;
+
+    ***Purchased track name AND artist name with each invoice line ID.***
+    
+SELECT art.Name AS artist_name, t.Name AS track_name, ii.InvoiceLineId
+FROM tracks AS t
+INNER JOIN invoice_items AS ii
+ON t.TrackId = ii.TrackId
+    INNER JOIN albums AS a
+    ON a.AlbumId = t.AlbumId
+        INNER JOIN artists AS art
+        ON art.ArtistId = a.ArtistId
+ORDER BY InvoiceLineId;
+
+    ***All Tracks, with Album name, Media type, and Genre.***
+    
+SELECT t.Name AS track_name, a.Title AS album_name, mt.Name AS media_type, g.Name AS genre
+FROM tracks AS t
+INNER JOIN albums AS a
+ON t.AlbumID = a.AlbumId
+    INNER JOIN media_types AS mt
+    ON t.MediaTypeId = mt.MediaTypeId
+        INNER JOIN genres AS g
+        ON t.GenreId = g.GenreId;
+        
+    ***Total sales made by each sales agent.***
+    
+SELECT e.EmployeeId, e.FirstName ||''|| e.LastName AS employee_name
+        , COUNT(i.invoiceId) AS total_invoices
+        , ROUND(SUM(i.Total),2) AS total_sales
+FROM chinook.customers AS c
+    INNER JOIN chinook.employees AS e
+    ON c.SupportRepId = e.EmployeeId
+        INNER JOIN chinook.invoices AS i
+        ON c.CustomerId = i.CustomerId
+        WHERE e.Title = 'Sales Support Agent'
+        GROUP BY e.EmployeeId;
+
+    ***Which sales agent made the most dollars in sales in 2009?***
+    
+SELECT e.EmployeeId, e.FirstName ||''|| e.LastName AS employee_name
+        , COUNT(i.invoiceId) AS total_invoices
+        , ROUND(SUM(i.Total),2) AS total_sales
+FROM chinook.customers AS c
+    INNER JOIN chinook.employees AS e
+    ON c.SupportRepId = e.EmployeeId
+        INNER JOIN chinook.invoices AS i
+        ON c.CustomerId = i.CustomerId
+        WHERE e.Title = 'Sales Support Agent'
+        AND i.InvoiceDate BETWEEN '2009-01-01' AND '2009-12-31'
+        GROUP BY e.EmployeeId
+        ORDER BY total_sales DESC;
